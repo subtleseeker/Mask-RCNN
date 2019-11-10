@@ -64,7 +64,7 @@ class BalloonConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 1
+    IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 5  # Background + balloon
@@ -174,7 +174,7 @@ class BalloonDataset(utils.Dataset):
 
         mask_dir = os.path.join(dataset_dir, "../masks")
         image_path = os.path.join(mask_dir, str(info["id"]))
-        print("$$$$$$$$$$$", image_path)
+        print("\n$$$$$$$$$$$", image_path)
         image = skimage.io.imread(image_path)
         # height, width = image.shape[:2]
 
@@ -199,7 +199,7 @@ class BalloonDataset(utils.Dataset):
 
         class_ids = np.arange(1,6).astype(np.int32)
 
-        print("%%%%%%%%%%%%%%%\n\n\n%%%%%%%%%%%%%%%%%%", mask.shape, class_ids.shape, image.shape)
+        print("\n%%%%%%%%%%%%%%%", mask.shape, class_ids.shape, image.shape)
 
         return mask, class_ids
 
