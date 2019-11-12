@@ -210,12 +210,13 @@ def color_splash(image, mask):
     """
     # Make a grayscale copy of the image. The grayscale copy still
     # has 3 RGB channels, though.
-    gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
+    # gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
+    gray = image
     # Copy color pixels from the original color image where mask is set
     if mask.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
         mask = (np.sum(mask, -1, keepdims=True) >= 1)
-        splash = np.where(mask, image, gray).astype(np.uint8)
+        splash = np.where(mask, (255,0,0), gray).astype(np.uint8)
     else:
         splash = gray.astype(np.uint8)
     return splash
@@ -230,8 +231,13 @@ def detect_and_color_splash(model, image_path=None, video_path=None):
         print("Running on {}".format(args.image))
         # Read image
         image = skimage.io.imread(args.image)
+        print("%%%%%%\n\n\n%%%%%%%", image.shape)
+
         # Detect objects
         r = model.detect([image], verbose=1)[0]
+        print("$$$$$\n\n\n$$$$$",r)
+        print(r['masks'].shape)
+
         # Color splash
         splash = color_splash(image, r['masks'])
         # Save output
