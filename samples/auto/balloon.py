@@ -31,9 +31,10 @@ import os
 import sys
 import json
 import datetime
+
+import enum
 import numpy as np
 import skimage.draw
-
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -50,10 +51,17 @@ COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 # through the command line argument --logs
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
+
 ############################################################
 #  Configurations
 ############################################################
 
+class ClassName(enum.Enum):
+    lane = 1
+    pedestrian = 2
+    vehicle = 3
+    sign_board = 4
+    street_light = 5
 
 class BalloonConfig(Config):
     """Configuration for training on the toy  dataset.
@@ -76,6 +84,7 @@ class BalloonConfig(Config):
     DETECTION_MIN_CONFIDENCE = 0.9
 
     global dataset_dir
+
 
 ############################################################
 #  Dataset
@@ -133,9 +142,9 @@ class BalloonDataset(utils.Dataset):
         #     else:
         #         polygons = [r['shape_attributes'] for r in a['regions']]
 
-            # load_mask() needs the image size to convert polygons to masks.
-            # Unfortunately, VIA doesn't include it in JSON, so we must read
-            # the image. This is only managable since the dataset is tiny.
+        # load_mask() needs the image size to convert polygons to masks.
+        # Unfortunately, VIA doesn't include it in JSON, so we must read
+        # the image. This is only managable since the dataset is tiny.
 
         images = os.listdir(dataset_dir)
 
@@ -145,7 +154,6 @@ class BalloonDataset(utils.Dataset):
             image_path = os.path.join(dataset_dir, i)
             image = skimage.io.imread(image_path)
             height, width = image.shape[:2]
-
 
             self.add_image(
                 source='auto',
@@ -170,11 +178,11 @@ class BalloonDataset(utils.Dataset):
         # Convert polygons to a bitmap mask of shape
         # [height, width, instance_count]
         info = self.image_info[image_id]
-        #print(info){'id': '01300.png', 'source': 'auto', 'path': './dataset/images/val/01300.png', 'width': 1280, 'height': 720}
+        # print(info){'id': '01300.png', 'source': 'auto', 'path': './dataset/images/val/01300.png', 'width': 1280, 'height': 720}
 
         mask_dir = os.path.join(dataset_dir, "../masks")
         image_path = os.path.join(mask_dir, str(info["id"]))
-        #print("\n$$$$$$$$$$$", image_path)
+        # print("\n$$$$$$$$$$$", image_path)
         image = skimage.io.imread(image_path)
         # height, width = image.shape[:2]
 
@@ -197,9 +205,9 @@ class BalloonDataset(utils.Dataset):
         # class_ids = np.where(lane == True, 1, class_ids)
         # class_ids = class_ids.astype(np.int32)
 
-        class_ids = np.arange(1,6).astype(np.int32)
+        class_ids = np.arange(1, 6).astype(np.int32)
 
-        #print("\n%%%%%%%%%%%%%%%", mask.shape, class_ids.shape, image.shape)
+        # print("\n%%%%%%%%%%%%%%%", mask.shape, class_ids.shape, image.shape)
 
         return mask, class_ids
 
@@ -245,6 +253,7 @@ def train(model):
                 learning_rate=config.LEARNING_RATE,
                 epochs=30,
                 layers='heads')
+
 
 # ############################################################
 # #  RLE Encoding
@@ -366,14 +375,41 @@ def color_splash(image, mask, class_ids):
     # gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
     splash = image
     # Copy color pixels from the original color image where mask is set
-    print("^^^^^^^^^", mask.shape)
-    print("\n***********", class_ids)
+    # print("^^^^^^^^^pd_mask.shape", mask.shape)
+
+
+    # gt_mask = np.zeros([splash.shape[0], splash.shape[1], 3], dtype=np.uint8)
+    # if mask.shape[-1] > 0:
+    #     # We're treating all instances as one, so collapse the mask into one layer
+    #     # mask = (np.sum(mask, -1, keepdims=True) >= 1)
+    #     for i in range(mask.shape[-1]):
+    #         m = mask[:, :, i]
+    #         m = np.stack((m, m, m), axis=2)
+    #         if class_ids[i] == 1:
+    #             gt_mask = np.where(m, (0, 255, 0), gt_mask).astype(np.uint8)
+    #         elif class_ids[i] == 2:
+    #             gt_mask = np.where(m, (255, 0, 255), gt_mask).astype(np.uint8)
+    #         elif class_ids[i] == 3:
+    #             gt_mask = np.where(m, (0, 255, 255), gt_mask).astype(np.uint8)
+    #         elif class_ids[i] == 4:
+    #             gt_mask = np.where(m, (255, 0, 0), gt_mask).astype(np.uint8)
+    #         elif class_ids[i] == 5:
+    #             gt_mask = np.where(m, (255, 255, 0), gt_mask).astype(np.uint8)
+    # print("sssssssssssss")
+    # import matplotlib.pyplot as plt
+    # plt.imshow(gt_mask)
+    # plt.show()
+    # # skimage.io.imsave("gt_mask", gt_mask)
+    # print("eeeeeeeeeeeeeee")
+
+
+    print("Found classes: ", ClassName(class_ids))
     if mask.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
         # mask = (np.sum(mask, -1, keepdims=True) >= 1)
         for i in range(mask.shape[-1]):
-            m = mask[:,:,i]
-            m = np.stack((m,m,m), axis=2)
+            m = mask[:, :, i]
+            m = np.stack((m, m, m), axis=2)
             if class_ids[i] == 1:
                 splash = np.where(m, (115, 255, 115), splash).astype(np.uint8)
             elif class_ids[i] == 2:
@@ -383,7 +419,7 @@ def color_splash(image, mask, class_ids):
             elif class_ids[i] == 4:
                 splash = np.where(m, (255, 115, 115), splash).astype(np.uint8)
             elif class_ids[i] == 5:
-                splash = np.where(m, (255, 225, 115), splash).astype(np.uint8)
+                splash = np.where(m, (255, 255, 115), splash).astype(np.uint8)
     else:
         splash = splash.astype(np.uint8)
     return splash
@@ -399,12 +435,12 @@ def detect_and_color_splash(model, image_path=None, video_path=None):
         # Read image
         image = skimage.io.imread(args.image)
         if len(image.shape) == 2:
-            image = np.stack((image,image,image), axis=2)
+            image = np.stack((image, image, image), axis=2)
 
         print("%%%%%%\n\n\n%%%%%%%", image.shape)
         # Detect objects
         r = model.detect([image], verbose=1)[0]
-        print("$$$$$\n\n\n$$$$$",r)
+        print("$$$$$\n\n\n$$$$$", r)
 
         # Color splash
         splash = color_splash(image, r['masks'], r['class_ids'])
@@ -446,6 +482,131 @@ def detect_and_color_splash(model, image_path=None, video_path=None):
         vwriter.release()
     print("Saved to ", file_name)
 
+
+############################################################
+#  Evaluate
+############################################################
+
+def get_mask(image, mask, class_ids):
+    """Apply color splash effect.
+    image: RGB image [height, width, 3]
+    mask: instance segmentation mask [height, width, instance count]
+
+    Returns result image.
+    """
+    # Make a grayscale copy of the image. The grayscale copy still
+    # has 3 RGB channels, though.
+    # gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
+    splash = image
+    # Copy color pixels from the original color image where mask is set
+    # print("^^^^^^^^^(detected)mask.shape, class_ids.shape = ", mask.shape, class_ids.shape)
+
+    pd_mask = np.zeros([splash.shape[0], splash.shape[1], 5], dtype=np.uint8)
+
+    if mask.shape[-1] > 0:
+        for i in range(mask.shape[-1]):
+            m = mask[:, :, i:i+1]
+            # m = np.stack((m, m, m), axis=2)
+            # m = mask.reshape(m.shape[0], m.shape[1], 1)
+            # print("yeyeyeye", m.shape, pd_mask[:,:,i:i+1].shape)
+            if class_ids[i] == 1:
+                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            elif class_ids[i] == 2:
+                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            elif class_ids[i] == 3:
+                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            elif class_ids[i] == 4:
+                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            elif class_ids[i] == 5:
+                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+
+    ############## For visualizing mask ##############
+    # pd_mask = np.zeros([splash.shape[0], splash.shape[1], 3], dtype=np.uint8)
+    # if mask.shape[-1] > 0:
+    #     for i in range(mask.shape[-1]):
+    #         m = mask[:, :, i]
+    #         m = np.stack((m, m, m), axis=2)
+    #         if class_ids[i] == 1:
+    #             pd_mask = np.where(m, (0, 255, 0), pd_mask).astype(np.uint8)
+    #         elif class_ids[i] == 2:
+    #             pd_mask = np.where(m, (255, 0, 255), pd_mask).astype(np.uint8)
+    #         elif class_ids[i] == 3:
+    #             pd_mask = np.where(m, (0, 255, 255), pd_mask).astype(np.uint8)
+    #         elif class_ids[i] == 4:
+    #             pd_mask = np.where(m, (255, 0, 0), pd_mask).astype(np.uint8)
+    #         elif class_ids[i] == 5:
+    #             pd_mask = np.where(m, (255, 255, 0), pd_mask).astype(np.uint8)
+    #################################################
+    return pd_mask
+
+
+def evaluate(model, dataset, limit=0, image_ids=None):
+    """Runs official COCO evaluation.
+    dataset: A Dataset object with valiadtion data
+    eval_type: "bbox" or "segm" for bounding box or segmentation evaluation
+    limit: if not 0, it's the number of images to use for evaluation
+    """
+    # Pick COCO images from the dataset
+    image_ids = image_ids or dataset.image_ids
+
+    # Limit to a subset
+    if limit:
+        image_ids = image_ids[:limit]
+
+    # Get corresponding COCO image IDs.
+    coco_image_ids = [dataset.image_info[id]["id"] for id in image_ids]
+
+    import time
+    t_prediction = 0
+    t_start = time.time()
+
+    results = []
+    total_iou_score = 0
+    for i, image_id in enumerate(image_ids):
+        # Load image
+        image = dataset.load_image(image_id)
+        gt_mask, class_ids = dataset.load_mask(image_id)
+
+        # Run detection
+        t = time.time()
+        r = model.detect([image], verbose=0)[0]
+        t_prediction += (time.time() - t)
+
+        ################ Save predicted images ##############
+        # Color splash
+        splash = color_splash(image, r['masks'], r['class_ids'])
+        # Save output
+        file_name = "splash_{:%Y%m%dT%H%M%S}.png".format(datetime.datetime.now())
+        skimage.io.imsave("dataset/images/predicted/" + file_name, splash)
+        #####################################################
+
+        pd_mask = get_mask(image, r['masks'], r['class_ids'])
+        # print("\n\n\n555555dt", pd_mask.shape)
+        # print("\n\n\n666666gt", gt_mask.shape)
+
+        intersection = np.logical_and(gt_mask, pd_mask)
+        union = np.logical_or(gt_mask, pd_mask)
+        iou_score = np.sum(intersection) / np.sum(union)
+        total_iou_score += iou_score
+
+        print(f"IOU score for {image_id} = ", iou_score)
+
+        # # Convert results to COCO format
+        # # Cast masks to uint8 because COCO tools errors out on bool
+        # image_results = build_coco_results(dataset, coco_image_ids[i:i + 1],
+        #                                    r["rois"], r["class_ids"],
+        #                                    r["scores"],
+        #                                    r["masks"].astype(np.uint8))
+        results.extend((image_id, iou_score))
+
+    print("IOUs = ", results)
+    print(f"------ Accuracy = {total_iou_score/len(image_ids)} ------\n")
+
+    print("Prediction time: {}. \nAverage time: {}/image".format(
+        t_prediction, t_prediction / len(image_ids)))
+    print("Total time: ", time.time() - t_start)
+
+
 ############################################################
 #  Training
 ############################################################
@@ -481,8 +642,8 @@ if __name__ == '__main__':
     if args.command == "train":
         assert args.dataset, "Argument --dataset is required for training"
     elif args.command == "splash":
-        assert args.image or args.video,\
-               "Provide --image or --video to apply color splash"
+        assert args.image or args.video, \
+            "Provide --image or --video to apply color splash"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
@@ -499,6 +660,8 @@ if __name__ == '__main__':
             # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
             GPU_COUNT = 1
             IMAGES_PER_GPU = 1
+
+
         config = InferenceConfig()
     config.display()
 
@@ -542,8 +705,42 @@ if __name__ == '__main__':
     elif args.command == "splash":
         detect_and_color_splash(model, image_path=args.image,
                                 video_path=args.video)
-    # elif args.command == "evaluate":
+    elif args.command == "evaluate":
+        # Validation dataset
+        dataset_val = BalloonDataset()
+        dataset_val.load_balloon(args.dataset, "val")
+        dataset_val.prepare()
 
+        # print("Running COCO evaluation on {} images.".format(args.limit))
+        evaluate(model, dataset_val)
     else:
         print("'{}' is not recognized. "
               "Use 'train' or 'splash'".format(args.command))
+
+
+# def build_coco_results(dataset, image_ids, rois, class_ids, scores, masks):
+#     """Arrange resutls to match COCO specs in http://cocodataset.org/#format
+#     """
+#     # If no results, return an empty list
+#     if rois is None:
+#         return []
+#
+#     results = []
+#     for image_id in image_ids:
+#         # Loop through detections
+#         for i in range(rois.shape[0]):
+#             class_id = class_ids[i]
+#             score = scores[i]
+#             bbox = np.around(rois[i], 1)
+#             mask = masks[:, :, i]
+#
+#             result = {
+#                 "image_id": image_id,
+#                 "category_id": dataset.get_source_class_id(class_id, "auto"),
+#                 "bbox": [bbox[1], bbox[0], bbox[3] - bbox[1], bbox[2] - bbox[0]],
+#                 "score": score,
+#                 "segmentation": maskUtils.encode(np.asfortranarray(mask))
+#             }
+#             results.append(result)
+#     return results
+
