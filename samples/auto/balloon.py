@@ -104,6 +104,7 @@ class BalloonDataset(utils.Dataset):
         self.add_class("auto", 3, "vehicle")
         self.add_class("auto", 4, "sign_board")
         self.add_class("auto", 5, "street_light")
+        self.add_class("auto", 6, "traffic_light")
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
