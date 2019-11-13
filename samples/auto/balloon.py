@@ -377,33 +377,7 @@ def color_splash(image, mask, class_ids):
     # Copy color pixels from the original color image where mask is set
     # print("^^^^^^^^^pd_mask.shape", mask.shape)
 
-
-    # gt_mask = np.zeros([splash.shape[0], splash.shape[1], 3], dtype=np.uint8)
-    # if mask.shape[-1] > 0:
-    #     # We're treating all instances as one, so collapse the mask into one layer
-    #     # mask = (np.sum(mask, -1, keepdims=True) >= 1)
-    #     for i in range(mask.shape[-1]):
-    #         m = mask[:, :, i]
-    #         m = np.stack((m, m, m), axis=2)
-    #         if class_ids[i] == 1:
-    #             gt_mask = np.where(m, (0, 255, 0), gt_mask).astype(np.uint8)
-    #         elif class_ids[i] == 2:
-    #             gt_mask = np.where(m, (255, 0, 255), gt_mask).astype(np.uint8)
-    #         elif class_ids[i] == 3:
-    #             gt_mask = np.where(m, (0, 255, 255), gt_mask).astype(np.uint8)
-    #         elif class_ids[i] == 4:
-    #             gt_mask = np.where(m, (255, 0, 0), gt_mask).astype(np.uint8)
-    #         elif class_ids[i] == 5:
-    #             gt_mask = np.where(m, (255, 255, 0), gt_mask).astype(np.uint8)
-    # print("sssssssssssss")
-    # import matplotlib.pyplot as plt
-    # plt.imshow(gt_mask)
-    # plt.show()
-    # # skimage.io.imsave("gt_mask", gt_mask)
-    # print("eeeeeeeeeeeeeee")
-
-
-    print("Found classes: ", ClassName(class_ids))
+    print("Found classes: ", [ClassName(class_id) for class_id in class_ids])
     if mask.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
         # mask = (np.sum(mask, -1, keepdims=True) >= 1)
