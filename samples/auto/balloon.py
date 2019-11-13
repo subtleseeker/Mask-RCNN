@@ -483,16 +483,16 @@ def get_mask(image, mask, class_ids):
             # m = np.stack((m, m, m), axis=2)
             # m = mask.reshape(m.shape[0], m.shape[1], 1)
             # print("yeyeyeye", m.shape, pd_mask[:,:,i:i+1].shape)
-            if class_ids[i] == 1:
-                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
-            elif class_ids[i] == 2:
-                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
-            elif class_ids[i] == 3:
-                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
-            elif class_ids[i] == 4:
-                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
-            elif class_ids[i] == 5:
-                pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            # if class_ids[i] == 1:
+            pd_mask[:,:,class_ids[i]-1:class_ids[i]] = np.where(m, True, pd_mask[:,:,class_ids[i]-1:class_ids[i]]).astype(np.uint8)
+            # elif class_ids[i] == 2:
+            #     pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            # elif class_ids[i] == 3:
+            #     pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            # elif class_ids[i] == 4:
+            #     pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+            # elif class_ids[i] == 5:
+            #     pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
 
     ############## For visualizing mask ##############
     # pd_mask = np.zeros([splash.shape[0], splash.shape[1], 3], dtype=np.uint8)
