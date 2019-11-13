@@ -377,7 +377,7 @@ def color_splash(image, mask, class_ids):
     # Copy color pixels from the original color image where mask is set
     # print("^^^^^^^^^pd_mask.shape", mask.shape)
 
-    print("Found classes: ", [ClassName(class_id) for class_id in class_ids])
+    print("Found classes: ", [ClassName(class_id).name for class_id in class_ids])
     if mask.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
         # mask = (np.sum(mask, -1, keepdims=True) >= 1)
