@@ -3,6 +3,9 @@
 **/dataset2
 **/*.h5
 **/.directory
+**/logs
+**/logs1
+**/logs2
 
 # Data files and directories common in repo root
 datasets/
