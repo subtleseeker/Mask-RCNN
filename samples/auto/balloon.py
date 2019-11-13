@@ -62,6 +62,7 @@ class ClassName(enum.Enum):
     vehicle = 3
     sign_board = 4
     street_light = 5
+    traffic_light = 6
 
 class BalloonConfig(Config):
     """Configuration for training on the toy  dataset.
@@ -75,7 +76,7 @@ class BalloonConfig(Config):
     IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
-    NUM_CLASSES = 1 + 5  # Background + balloon
+    NUM_CLASSES = 1 + 6  # Background + balloon
 
     # Number of training steps per epoch
     STEPS_PER_EPOCH = 100
@@ -191,11 +192,12 @@ class BalloonDataset(utils.Dataset):
         vehicle = np.all(image == (0, 255, 255), axis=-1)
         sign_board = np.all(image == (255, 0, 0), axis=-1)
         street_light = np.all(image == (255, 255, 0), axis=-1)
+        traffic_light = np.all(image == (0, 0, 255), axis=-1)
 
         # mask = lane | pedestrian | street_light | sign_board | vehicle
         # # mask = mask.reshape(info["height"], info["width"], 1).astype(bool)
         # mask = np.stack((mask, mask, mask), axis=2).astype(bool)
-        mask = np.stack((lane, pedestrian, vehicle, sign_board, street_light), axis=2).astype(np.bool)
+        mask = np.stack((lane, pedestrian, vehicle, sign_board, street_light, traffic_light), axis=2).astype(np.bool)
 
         # class_ids = np.zeros([info["height"], info["width"]], dtype=np.uint8)
         # class_ids = np.where(street_light == True, 5, class_ids)
@@ -205,7 +207,7 @@ class BalloonDataset(utils.Dataset):
         # class_ids = np.where(lane == True, 1, class_ids)
         # class_ids = class_ids.astype(np.int32)
 
-        class_ids = np.arange(1, 6).astype(np.int32)
+        class_ids = np.arange(1, 7).astype(np.int32)
 
         # print("\n%%%%%%%%%%%%%%%", mask.shape, class_ids.shape, image.shape)
 
@@ -377,7 +379,7 @@ def color_splash(image, mask, class_ids):
     # Copy color pixels from the original color image where mask is set
     # print("^^^^^^^^^pd_mask.shape", mask.shape)
 
-    print("Found classes: ", [ClassName(class_id) for class_id in class_ids])
+    print("Found classes: ", [ClassName(class_id).name for class_id in class_ids])
     if mask.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
         # mask = (np.sum(mask, -1, keepdims=True) >= 1)
@@ -394,6 +396,8 @@ def color_splash(image, mask, class_ids):
                 splash = np.where(m, (255, 115, 115), splash).astype(np.uint8)
             elif class_ids[i] == 5:
                 splash = np.where(m, (255, 255, 115), splash).astype(np.uint8)
+            elif class_ids[i] == 6:
+                splash = np.where(m, (115, 115, 255), splash).astype(np.uint8)
     else:
         splash = splash.astype(np.uint8)
     return splash
@@ -475,7 +479,7 @@ def get_mask(image, mask, class_ids):
     # Copy color pixels from the original color image where mask is set
     # print("^^^^^^^^^(detected)mask.shape, class_ids.shape = ", mask.shape, class_ids.shape)
 
-    pd_mask = np.zeros([splash.shape[0], splash.shape[1], 5], dtype=np.uint8)
+    pd_mask = np.zeros([splash.shape[0], splash.shape[1], 6], dtype=np.uint8)
 
     if mask.shape[-1] > 0:
         for i in range(mask.shape[-1]):
@@ -493,6 +497,7 @@ def get_mask(image, mask, class_ids):
             #     pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
             # elif class_ids[i] == 5:
             #     pd_mask[:,:,i:i+1] = np.where(m, True, pd_mask[:,:,i:i+1]).astype(np.uint8)
+
 
     ############## For visualizing mask ##############
     # pd_mask = np.zeros([splash.shape[0], splash.shape[1], 3], dtype=np.uint8)
