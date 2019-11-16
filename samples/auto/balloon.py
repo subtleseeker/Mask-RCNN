@@ -538,7 +538,7 @@ def evaluate(model, dataset, limit=0, image_ids=None):
 
     results = []
     total_iou_score = 0
-    total_class_iou = np.zeros(6)
+    total_class_iou = np.zeros(5)
     for i, image_id in enumerate(image_ids):
         # Load image
         image = dataset.load_image(image_id)
@@ -566,22 +566,21 @@ def evaluate(model, dataset, limit=0, image_ids=None):
         iou_score = np.sum(intersection) / np.sum(union)
         total_iou_score += iou_score
 
-        class_iou = np.zeros(6)
-        for j in range(6):
+        class_iou = np.zeros(5)
+        for j in range(5):
             inter = np.logical_and(gt_mask[:,:,j], pd_mask[:,:,j])
             un = np.logical_or(gt_mask[:,:,j], pd_mask[:,:,j])
             class_iou[j] = np.sum(inter) / np.sum(un)
             if not isnan(class_iou[j]):
                 total_class_iou[j] += class_iou[j]
 
-
         class_names = [ClassName(class_id).name for class_id in class_ids]
         print(f"Class IOU scores")
-        for j in range(6):
+        for j in range(5):
             print(class_names[j].ljust(14) + ": " + str(class_iou[j]))
 
         print(f"IOU score for {image_id} = {iou_score}")
-        print("--------------------------------------------------")
+        print("".ljust(50,'-'))
 
         # # Convert results to COCO format
         # # Cast masks to uint8 because COCO tools errors out on bool
@@ -597,7 +596,7 @@ def evaluate(model, dataset, limit=0, image_ids=None):
 
     class_names = [ClassName(class_id).name for class_id in class_ids]
     print(f"Average Class IOU scores")
-    for j in range(6):
+    for j in range(5):
         print(class_names[j].ljust(14) + ": " + str((total_class_iou[j]/len(image_ids))))
 
     print(f"------ Average IOU score = {total_iou_score/len(image_ids)} ------\n".ljust(50,'-'))
