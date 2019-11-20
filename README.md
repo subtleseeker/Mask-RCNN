@@ -1,8 +1,7 @@
-Mask R-CNN adapted for semantic segmentation of custom dataset for autonomous driving to augment Visual SLAM
-
-ROOT_DIR = Mask_RCNN/
+Mask R-CNN adapted for semantic segmentation of custom dataset for autonomous driving to augment Visual SLAM.
 
 ## Directory structure
+ROOT_DIR = `Mask_RCNN/`
 ```
 ROOT_DIR/auto
 ├── auto.py
@@ -24,9 +23,9 @@ python3 -m venv env
 source env/bin/activate
 pip3 install -r requirements.txt
 ```
-If there is an issue, then follow these steps:
-	- Use the provided tar `env` by extracting it in ROOT_DIR.
-	- Activate virtual environment from `ROOT_DIR` by executing `source env/bin/activate`. Find more info about virtual environment in [this](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) link.
+If there is an issue, then follow these steps:   
+	- Use the provided tar `env` by extracting it in ROOT_DIR.   
+	- Activate virtual environment from ROOT_DIR by executing `source env/bin/activate`. Find more info about virtual environment in [this](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) link.
 - Download `mask_rcnn_coco.h5` in the ROOT_DIR from [this](https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5) link. If that link fails, open [this](https://github.com/matterport/Mask_RCNN/releases) link and download the file under `v2.0` tag.
 - `cd ROOT_DIR/auto`
 - Create the directory structure as above. Particularly, the `dataset` folder should be strictly leveled and named as above. The `predicted` directory is initially an empty.
@@ -55,7 +54,7 @@ python3 auto.py overlay --weights=/path/to/weights/file.h5 --image=<URL or path 
 python3 auto.py overlay --weights=last --video=<URL or path to file>
 ```
 
-Logs will be stored in `ROOT_DIR/logs` for every epoch. Use the last auto_xxxxxx.h5 file as the trained model weights to use for your dataset.
+Logs will be stored in `ROOT_DIR/logs` for every epoch. Use the last `auto_xxxxxx.h5` file as the trained model weights to use for your dataset.
 
 ## Training over Colab
 1. Login with the Gmail account.
@@ -82,4 +81,4 @@ python3 auto.py evaluate --dataset=<dataset path> --weights=<.h5 weights path>
 ```
 
 ## Adding/Removing class
-Follow the `#classchange` comment, using `Find` (Ctrl/Cmd + F) in the file `auto.py` and change the lines to fulfil custom requirements.
+Follow the `#classchange` comment, using `Find` (Ctrl/Cmd + F) in the file `auto.py` and change the lines to fulfill custom requirements.
