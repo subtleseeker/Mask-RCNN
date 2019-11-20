@@ -1,3 +1,5 @@
+Mask R-CNN adapted for semantic segmentation of custom dataset for autonomous driving to augment Visual SLAM
+
 ROOT_DIR = Mask_RCNN/
 
 ## Directory structure
@@ -12,7 +14,7 @@ ROOT_DIR/auto
 │   └── masks
 ├── inspect_balloon_data.ipynb
 ├── inspect_balloon_model.ipynb
-└── README.md
+└── train_colab.ipynb
 ```
 
 ## Steps to replicate
