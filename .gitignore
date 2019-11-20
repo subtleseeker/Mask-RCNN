@@ -6,6 +6,7 @@
 **/logs
 **/logs1
 **/logs2
+env
 
 # Data files and directories common in repo root
 datasets/
