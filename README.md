@@ -33,7 +33,7 @@ If there is an issue, then follow these steps:
 ## Training
 Training using pretrained coco weights, execute the following command:
 ```
-python3 balloon.py train --dataset=./dataset2/images --weights=coco
+python3 auto.py train --dataset=./dataset/images --weights=coco
 ```
 
 Other commands which could be used:
